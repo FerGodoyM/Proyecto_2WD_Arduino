@@ -4,15 +4,27 @@
 
 Servo servoMotor;
 
+#define ANGULO_IZQ 80
+#define ANGULO_CEN 120
+#define ANGULO_DER 160
+
+//Motor Izquierdo
+const int IN1 = 7;
+const int IN2 = 6;
+
+//Motor Derecho
+const int IN3 = 5;
+const int IN4 = 4;
+
 //pines del sensor HC-SR04
 const int trigPin = 8;
 const int echoPin = 9;
 
 //variables para almacenar la distancia medida
 long duracion;
-float distanciaIzq;
-float distanciaCen;
-float distanciaDer;
+float distanciaIzq = 0;
+float distanciaCen = 0;
+float distanciaDer = 0;
 
 
 // Variables pensadas para un uso futuro.
@@ -25,67 +37,85 @@ float distanciaDer;
 // float distanciaCenAprox;
 // float distanciaDerAprox;
 
+//   --------------FUNCIONES DE MOVIMIENTO--------------------
+void avanzar(){
+  //MOTOR DERECHO GIRA PARA ADELANTE
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+
+  //MOTOR IZQUIERDO GIRA PARA ADELANTE
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+}
+
+void detener(){
+  //MOTOR DERECHO APAGADO
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+
+  //MOTOR IZQUIERDO APAGADO
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+}
+
+// ------------------- FUNCIONES -------------------------
+
+float medirDistanciaEn(int angulo) {
+  servoMotor.write(angulo);
+  delay(500);  // Deja que el servo se estabilice
+
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+
+  long duracion = pulseIn(echoPin, HIGH);
+  return duracion * 0.0343 / 2;  // Devuelve la distancia en cm
+}
+
+void medirDistancias() {
+  distanciaIzq = medirDistanciaEn(ANGULO_IZQ);
+  Serial.print("Izquierda: ");
+  Serial.print(distanciaIzq);
+  Serial.print(" cm | Centro: ");
+
+  distanciaCen = medirDistanciaEn(ANGULO_CEN);
+  Serial.print(distanciaCen);
+  Serial.print(" cm | Derecha: ");
+
+  distanciaDer = medirDistanciaEn(ANGULO_DER);
+  Serial.print(distanciaDer);
+  Serial.println(" cm");
+}
+
+// ----------------------- FUNCIONAMIENTO -------------------
+
 void setup() {
   //configuracion de pines
   pinMode(trigPin, OUTPUT);   //salida sensor HC-SR04
   pinMode(echoPin, INPUT);    //Entrada sensor HC-SR04
+
+  pinMode(IN1, OUTPUT);
+  pinMode(IN2, OUTPUT);
+  pinMode(IN3, OUTPUT);
+  pinMode(IN4, OUTPUT);
 
   Serial.begin(9600);
   servoMotor.attach(10);
 }
 
 void loop() {
-  //inicia en 5 grados debido a que es la posicion inicial deseada
-  servoMotor.write(80);
-  delay(500);
-  //se asegura que HC-SR04 este en low
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-  //se envia un pulso ultrasonico de 10ms
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
-  //para calcular la distancia se multiplica la duracion
-  //por la velocida del sonido dividido en 2
-  duracion = pulseIn(echoPin, HIGH);
-  distanciaIzq = duracion * 0.0343 / 2;
-  
-  Serial.print("Izquierda: ");
-  Serial.print(distanciaIzq);
-  Serial.print(" cm | Centro: ");
 
-  //pasa a posicion 100 que seria el frente en la realidad
-  //y se repite lo hecho con el sensor HC-SR04
-  servoMotor.write(120);
-  delay(500);
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
+  //Con esta consulta garantizamos que haga un mapeo antes de avanzar a cualquier lado
+  if (distanciaIzq > 0 && distanciaCen > 0 && distanciaDer > 0) {
+    if(distanciaCen > 15){
+      avanzar();
+    }else{
+      detener();
+    }
 
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
-
-  duracion = pulseIn(echoPin, HIGH);
-  distanciaCen = duracion * 0.0343 / 2;
-
-  Serial.print(distanciaCen);
-  Serial.print(" cm | Derecha: ");
-
-  //pasa a posicion 145 que seria 135 grados en la realidad
-  //y se repite lo hecho con el sensor HC-SR04
-  servoMotor.write(160);
-  delay(500);
-  digitalWrite(trigPin, LOW);
-  delayMicroseconds(2);
-
-  digitalWrite(trigPin, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(trigPin, LOW);
-
-  duracion = pulseIn(echoPin, HIGH);
-  distanciaDer = duracion * 0.0343 / 2;
-
-  Serial.print(distanciaDer);
-  Serial.println(" cm");
+  }
+  medirDistancias();
 }
 
