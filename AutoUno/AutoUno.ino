@@ -58,6 +58,36 @@ void detener(){
   digitalWrite(IN4, LOW);
 }
 
+void doblarDerecha(){
+    // Derecho detenido
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, LOW);
+
+  // Izquierdo adelante
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+}
+
+void doblarIzquierda(){
+  // Derecho adelante
+  digitalWrite(IN1, HIGH);
+  digitalWrite(IN2, LOW);
+
+  // Izquierdo detenido
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+}
+
+void vuelta(){
+  // Derecho atrás
+  digitalWrite(IN1, LOW);
+  digitalWrite(IN2, HIGH);
+  
+  // Izquierdo adelante
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, HIGH);
+}
+
 // ------------------- FUNCIONES -------------------------
 
 float medirDistanciaEn(int angulo) {
