@@ -74,21 +74,6 @@ float medirDistanciaEn(int angulo) {
   return duracion * 0.0343 / 2;  // Devuelve la distancia en cm
 }
 
-void medirDistancias() {
-  distanciaIzq = medirDistanciaEn(ANGULO_IZQ);
-  Serial.print("Izquierda: ");
-  Serial.print(distanciaIzq);
-  Serial.print(" cm | Centro: ");
-
-  distanciaCen = medirDistanciaEn(ANGULO_CEN);
-  Serial.print(distanciaCen);
-  Serial.print(" cm | Derecha: ");
-
-  distanciaDer = medirDistanciaEn(ANGULO_DER);
-  Serial.print(distanciaDer);
-  Serial.println(" cm");
-}
-
 // ----------------------- FUNCIONAMIENTO -------------------
 
 void setup() {
@@ -105,17 +90,35 @@ void setup() {
   servoMotor.attach(10);
 }
 
+int estadoMedicion = 0;  // 0=izq, 1=centro, 2=der
+
 void loop() {
-
-  //Con esta consulta garantizamos que haga un mapeo antes de avanzar a cualquier lado
-  if (distanciaIzq > 0 && distanciaCen > 0 && distanciaDer > 0) {
-    if(distanciaCen > 15){
-      avanzar();
-    }else{
-      detener();
-    }
-
+  switch(estadoMedicion) {
+    case 0:
+      distanciaIzq = medirDistanciaEn(ANGULO_IZQ);
+      Serial.print("Izquierda: ");
+      Serial.print(distanciaIzq);
+      Serial.print(" cm | Centro: ");
+      estadoMedicion = 1;
+      break;
+    case 1:
+      distanciaCen = medirDistanciaEn(ANGULO_CEN);
+      Serial.print(distanciaCen);
+      Serial.print(" cm | Derecha: ");
+      // Decide aquí según distanciaCen
+      if (distanciaCen > 15) {
+        avanzar();
+      }else {
+        detener();}
+      estadoMedicion = 2;
+      break;
+    case 2:
+      distanciaDer = medirDistanciaEn(ANGULO_DER);
+      estadoMedicion = 0;
+      Serial.print(distanciaDer);
+      Serial.println(" cm");
+      break;
   }
-  medirDistancias();
 }
+
 
