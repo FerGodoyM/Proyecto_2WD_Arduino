@@ -88,11 +88,19 @@ void vuelta(){
   digitalWrite(IN4, HIGH);
 }
 
+void retroceder(){
+  digitalWrite(IN1, LOW);   // Motor derecho atrás
+  digitalWrite(IN2, HIGH);
+
+  digitalWrite(IN3, HIGH);  // Motor izquierdo atrás
+  digitalWrite(IN4, LOW);
+}
+
 // ------------------- FUNCIONES -------------------------
 
 float medirDistanciaEn(int angulo) {
   servoMotor.write(angulo);
-  delay(500);  // Deja que el servo se estabilice
+  delay(200);  // Deja que el servo se estabilice
 
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
@@ -120,35 +128,100 @@ void setup() {
   servoMotor.attach(10);
 }
 
-int estadoMedicion = 0;  // 0=izq, 1=centro, 2=der
-
 void loop() {
-  switch(estadoMedicion) {
-    case 0:
-      distanciaIzq = medirDistanciaEn(ANGULO_IZQ);
-      Serial.print("Izquierda: ");
-      Serial.print(distanciaIzq);
-      Serial.print(" cm | Centro: ");
-      estadoMedicion = 1;
-      break;
-    case 1:
-      distanciaCen = medirDistanciaEn(ANGULO_CEN);
-      Serial.print(distanciaCen);
-      Serial.print(" cm | Derecha: ");
-      // Decide aquí según distanciaCen
-      if (distanciaCen > 15) {
-        avanzar();
-      }else {
-        detener();}
-      estadoMedicion = 2;
-      break;
-    case 2:
-      distanciaDer = medirDistanciaEn(ANGULO_DER);
-      estadoMedicion = 0;
-      Serial.print(distanciaDer);
-      Serial.println(" cm");
-      break;
+  distanciaIzq = medirDistanciaEn(ANGULO_IZQ);
+  distanciaCen = medirDistanciaEn(ANGULO_CEN);
+  distanciaDer = medirDistanciaEn(ANGULO_DER);
+
+  Serial.print("Izquierda: ");
+  Serial.print(distanciaIzq);
+  Serial.print(" cm | Centro: ");
+  Serial.print(distanciaCen);
+  Serial.print(" cm | Derecha: ");
+  Serial.println(distanciaDer);
+
+// Para verificar que tomo una decision
+  bool accionTomada = false;
+ // 1. Camino completamente libre
+  if(distanciaCen >= 25 && distanciaIzq > 15 && distanciaDer > 15){
+    avanzar();
+    accionTomada = true;
+  }
+  // 2. Lateral muy cerca, corregir dirección
+  else if(distanciaCen >= 25 && distanciaIzq < 15){
+    doblarDerecha();
+    delay(200);
+    accionTomada = true;
+  }else if(distanciaCen >= 25 && distanciaDer < 15){
+    doblarIzquierda();
+    delay(200);
+    accionTomada = true;
+  // 3. Centro libre, pero un lado es claramente más despejado
+  }else if(distanciaCen > 25 && distanciaDer > distanciaCen && distanciaDer > distanciaIzq){
+    doblarDerecha();
+    delay(400);    
+    accionTomada = true;
+
+  }else if(distanciaIzq > 25 && distanciaIzq > distanciaCen && distanciaIzq > distanciaDer){
+    doblarIzquierda();
+    delay(400);
+    accionTomada = true;
+
+  // 4. Atascado por completo (menos de 20 cm en todos lados)
+  }else if(distanciaCen < 20 && distanciaIzq < 20 && distanciaDer < 20){
+    retroceder();
+    delay(600);
+    vuelta();
+    delay(800);
+    accionTomada = true;
+
+  // 5. Algún obstáculo muy cercano (<10 cm)
+  }else if(distanciaCen < 10 || distanciaIzq < 10 || distanciaDer < 10){    
+    retroceder();
+    delay(600);
+    accionTomada = true;
+
+  // 6. Zona intermedia (20–25 cm al frente, laterales bien)
+  }else if (distanciaCen >= 20 && distanciaCen < 25 && distanciaIzq > 15 && distanciaDer > 15) {
+    avanzar();
+    accionTomada = true;
+
+  // 7. Zona estrecha, elegir dirección más despejada
+  }else if (distanciaCen < 25 && distanciaCen >= 15) {
+    if (distanciaDer > distanciaIzq && distanciaDer > 20) {
+      doblarDerecha();
+      delay(300);
+    } else if (distanciaIzq > distanciaDer && distanciaIzq > 20) {
+      doblarIzquierda();
+      delay(300);
+    } else {
+      retroceder();
+      delay(300);
+    }
+    accionTomada = true;
+  }
+
+
+  //Se habia implementado un ELSE para las condiciones no
+  //tomadas, que simplemente retrocedia. pero aun asi encontre una situacion
+  //en donde el auto quedo completamente estatico
+  //por eso mismo implemente los 2 condicionales que siguen
+
+  // Si ninguna condición se cumplió
+  if (!accionTomada) {
+    Serial.println("Sin condición clara. Retrocediendo por seguridad.");
+    retroceder();
+    delay(600);
+  }
+
+  // Verificación de que los motores no estén apagados
+  if (digitalRead(IN1) == LOW && digitalRead(IN2) == LOW &&
+      digitalRead(IN3) == LOW && digitalRead(IN4) == LOW) {
+    Serial.println("Motores apagados detectados. Retrocediendo preventivamente.");
+    retroceder();
+    delay(500);
   }
 }
+
 
 
