@@ -1,9 +1,9 @@
-// CONFIGURACION 2WD UNIVERSIDAD
+// CONFIGURACION 2WD ESPACIOS ESTRECHOS
 
 #include <Servo.h>
-#define ANGULO_IZQ 55
+#define ANGULO_IZQ 65
 #define ANGULO_CEN 100
-#define ANGULO_DER 145
+#define ANGULO_DER 175
 
 Servo servoMotor;
 
@@ -14,10 +14,6 @@ const int IN2 = 6;
 //Motor Derecho
 const int IN3 = 5;
 const int IN4 = 4;
-
-const int PWM_IZQ = 3;
-const int PWM_DER = 11;
-
 
 //pines del sensor HC-SR04
 const int trigPin = 8;
@@ -106,24 +102,6 @@ float medirDistanciaEn(int angulo) {
   return duracion * 0.0343 / 2;  // Devuelve la distancia en cm
 }
 
-const float DISTANCIA_MIN = 20.0;
-
-void controlarMotor(int pin1, int pin2, int pinPWM, int velocidad) {
-  if (velocidad > 0) {
-    analogWrite(pinPWM, velocidad);
-    digitalWrite(pin1, HIGH);
-    digitalWrite(pin2, LOW);
-  } else if (velocidad < 0) {
-    analogWrite(pinPWM, -velocidad);
-    digitalWrite(pin1, LOW);
-    digitalWrite(pin2, HIGH);
-  } else {
-    analogWrite(pinPWM, 0);
-    digitalWrite(pin1, LOW);
-    digitalWrite(pin2, LOW);
-  }
-}
-
 void setup() {
   //configuracion de pines
   pinMode(trigPin, OUTPUT);   //salida sensor HC-SR04
@@ -150,29 +128,5 @@ void loop() {
   Serial.print(" cm | Derecha: ");
   Serial.println(distanciaDer);
 
-  int velocidadMax = 255;
-  int velocidadIzq = velocidadMax;
-  int velocidadDer = velocidadMax;
-
-  if (distanciaCen < DISTANCIA_MIN) {
-    velocidadIzq = 0;
-    velocidadDer = 0;
-  } else {
-    if (distanciaIzq < DISTANCIA_MIN) {
-      velocidadIzq = 0;
-    }
-    if (distanciaDer < DISTANCIA_MIN) {
-      velocidadDer = 0;
-    }
-    velocidadIzq = map(constrain(distanciaIzq, 0, DISTANCIA_MIN*2), 0, DISTANCIA_MIN*2, 0, velocidadMax);
-    velocidadDer = map(constrain(distanciaDer, 0, DISTANCIA_MIN*2), 0, DISTANCIA_MIN*2, 0, velocidadMax);
-
-    if (distanciaIzq > DISTANCIA_MIN) velocidadIzq = velocidadMax;
-    if (distanciaDer > DISTANCIA_MIN) velocidadDer = velocidadMax;
-  }
-  controlarMotor(IN1, IN2, PWM_DER, velocidadDer);
-  controlarMotor(IN3, IN4, PWM_IZQ, velocidadIzq);
-
-  delay(100);
 }
 

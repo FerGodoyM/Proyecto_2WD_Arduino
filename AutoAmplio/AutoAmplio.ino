@@ -1,12 +1,12 @@
-// CONFIGURACION DE MI 2WD
+// CONFIGURACION 2WD ESPACIOS AMPLIOS
 
 #include <Servo.h>
 
 Servo servoMotor;
 
-#define ANGULO_IZQ 80
+#define ANGULO_IZQ 65
 #define ANGULO_CEN 120
-#define ANGULO_DER 160
+#define ANGULO_DER 175
 
 //Motor Izquierdo
 const int IN1 = 7;
