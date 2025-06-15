@@ -26,7 +26,6 @@ float distanciaCen = 0;
 float distanciaDer = 0;
 
 //   --------------FUNCIONES DE MOVIMIENTO--------------------
-// NO CONFIRME EL FUNCIONAMIENTO DE ESTOS MOVIMIENTOS EN EL AUTO DE LA UNIVERSIDAD
 
 void avanzar(){
   //MOTOR DERECHO GIRA PARA ADELANTE
@@ -48,34 +47,24 @@ void detener(){
   digitalWrite(IN4, LOW);
 }
 
-void doblarDerecha(){
-    // Derecho detenido
+void girarDerecha() {
+  // Motor derecho gira hacia atrás
   digitalWrite(IN1, LOW);
-  digitalWrite(IN2, LOW);
+  digitalWrite(IN2, HIGH);
 
-  // Izquierdo adelante
+  // Motor izquierdo gira hacia adelante
   digitalWrite(IN3, LOW);
   digitalWrite(IN4, HIGH);
 }
 
-void doblarIzquierda(){
-  // Derecho adelante
+void girarIzquierda() {
+  // Motor derecho gira hacia adelante
   digitalWrite(IN1, HIGH);
   digitalWrite(IN2, LOW);
 
-  // Izquierdo detenido
-  digitalWrite(IN3, LOW);
+  // Motor izquierdo gira hacia atrás
+  digitalWrite(IN3, HIGH);
   digitalWrite(IN4, LOW);
-}
-
-void vuelta(){
-  // Derecho atrás
-  digitalWrite(IN1, LOW);
-  digitalWrite(IN2, HIGH);
-  
-  // Izquierdo adelante
-  digitalWrite(IN3, LOW);
-  digitalWrite(IN4, HIGH);
 }
 
 void retroceder(){
