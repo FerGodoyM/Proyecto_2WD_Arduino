@@ -4,9 +4,9 @@
 
 Servo servoMotor;
 
-#define ANGULO_IZQ 65
-#define ANGULO_CEN 120
-#define ANGULO_DER 175
+#define ANGULO_IZQ 20
+#define ANGULO_CEN 77
+#define ANGULO_DER 125
 
 //Motor Izquierdo
 const int IN1 = 7;
@@ -100,7 +100,7 @@ void retroceder(){
 
 float medirDistanciaEn(int angulo) {
   servoMotor.write(angulo);
-  delay(200);  // Deja que el servo se estabilice
+  delay(215);  // Deja que el servo se estabilice
 
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
@@ -221,6 +221,7 @@ void loop() {
     retroceder();
     delay(500);
   }
+
 }
 
 

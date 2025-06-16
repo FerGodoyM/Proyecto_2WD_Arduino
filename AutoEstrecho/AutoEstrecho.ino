@@ -1,9 +1,9 @@
 // CONFIGURACION 2WD ESPACIOS ESTRECHOS
 
 #include <Servo.h>
-#define ANGULO_IZQ 65
-#define ANGULO_CEN 100
-#define ANGULO_DER 175
+#define ANGULO_IZQ 0
+#define ANGULO_CEN 77
+#define ANGULO_DER 172
 
 Servo servoMotor;
 
@@ -79,7 +79,7 @@ void retroceder(){
 
 float medirDistanciaEn(int angulo) {
   servoMotor.write(angulo);
-  delay(200);  // Deja que el servo se estabilice
+  delay(500);  // Deja que el servo se estabilice
 
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
@@ -105,17 +105,52 @@ void setup() {
   servoMotor.attach(10);
 }
 
+int contadorRetroceder= 0; 
 void loop() {
-  distanciaIzq = medirDistanciaEn(ANGULO_IZQ);
   distanciaCen = medirDistanciaEn(ANGULO_CEN);
-  distanciaDer = medirDistanciaEn(ANGULO_DER);
-
-  Serial.print("Izquierda: ");
-  Serial.print(distanciaIzq);
-  Serial.print(" cm | Centro: ");
+  Serial.print("Centro: ");
   Serial.print(distanciaCen);
-  Serial.print(" cm | Derecha: ");
-  Serial.println(distanciaDer);
 
+  if(distanciaCen >= 13){
+    avanzar();
+    contadorRetroceder = 0;
+  }else{
+    detener();
+    distanciaDer = medirDistanciaEn(ANGULO_DER);
+    distanciaIzq = medirDistanciaEn(ANGULO_IZQ);
+    if(distanciaDer >= 13 && distanciaDer > distanciaIzq){
+      girarDerecha();
+      delay(180);
+      contadorRetroceder = 0;
+    }else if (distanciaIzq >= 13 && distanciaIzq > distanciaDer) {
+      girarIzquierda();
+      delay(180);
+      contadorRetroceder = 0;
+    }else{
+      retroceder();
+      delay(500);
+      contadorRetroceder += 1;
+    }
+  }
+
+  if(contadorRetroceder == 3){
+    retroceder();
+    detener();
+    distanciaCen = medirDistanciaEn(ANGULO_CEN);
+    distanciaDer = medirDistanciaEn(ANGULO_DER);
+    distanciaIzq = medirDistanciaEn(ANGULO_IZQ);
+
+    if(distanciaCen > distanciaIzq && distanciaCen > distanciaDer){
+      avanzar();
+    }
+    else if(distanciaIzq > distanciaCen && distanciaIzq > distanciaDer){
+      girarIzquierda();
+      delay(180);
+    }else if(distanciaDer > distanciaIzq && distanciaDer > distanciaCen){
+      girarDerecha();
+      delay(180);
+    }
+    contadorRetroceder = 0;
+  }
 }
 
