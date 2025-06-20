@@ -115,7 +115,7 @@ float medirDistanciaEn(int angulo) {
 
 //Determina si 2 dictancias son similares tomando en cuenta una tolerancia de error
 bool sonSimilares(float a, float b) {
-  return abs(a - b) < TOLERANCIA;
+  return abs(a - b) < tolerancia;
 }
 
 // ----------------------- FUNCIONAMIENTO -------------------
@@ -206,6 +206,7 @@ void loop() {
     }
     accionTomada = true;
   }
+
 
   //Se habia implementado un ELSE para las condiciones no
   //tomadas, que simplemente retrocedia. pero aun asi encontre una situacion
