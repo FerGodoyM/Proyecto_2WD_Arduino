@@ -139,13 +139,6 @@ void loop() {
   distanciaCen = medirDistanciaEn(ANGULO_CEN);
   distanciaDer = medirDistanciaEn(ANGULO_DER);
 
-  Serial.print("Izquierda: ");
-  Serial.print(distanciaIzq);
-  Serial.print(" cm | Centro: ");
-  Serial.print(distanciaCen);
-  Serial.print(" cm | Derecha: ");
-  Serial.println(distanciaDer);
-
 // Para verificar que tomo una decision
   bool accionTomada = false;
  // 1. Camino completamente libre
@@ -215,7 +208,6 @@ void loop() {
 
   // Si ninguna condición se cumplió
   if (!accionTomada) {
-    Serial.println("Sin condición clara. Retrocediendo por seguridad.");
     retroceder();
     delay(600);
   }
@@ -223,7 +215,6 @@ void loop() {
   // Verificación de que los motores no estén apagados
   if (digitalRead(IN1) == LOW && digitalRead(IN2) == LOW &&
       digitalRead(IN3) == LOW && digitalRead(IN4) == LOW) {
-    Serial.println("Motores apagados detectados. Retrocediendo preventivamente.");
     retroceder();
     delay(500);
   }
@@ -245,7 +236,6 @@ if (sonSimilares(distanciaCen, historial1) &&
 
   // Si el patrón se repite muchas veces, asumir atasco
   if (repeticionesSimilares >= repeticionesLimite) {
-    Serial.println("Atasco detectado por repetición. Retrocediendo");
     retroceder();
     delay(500);
     repeticionesSimilares = 0;
