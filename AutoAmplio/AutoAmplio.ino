@@ -4,6 +4,7 @@
 
 Servo servoMotor;
 
+//angulos de los servos
 #define ANGULO_IZQ 20
 #define ANGULO_CEN 77
 #define ANGULO_DER 125
@@ -26,10 +27,12 @@ float distanciaIzq = 0;
 float distanciaCen = 0;
 float distanciaDer = 0;
 
-float histIzq[3] = {-1, -1, -1};
-float histCen[3] = {-1, -1, -1};
-float histDer[3] = {-1, -1, -1};
+//historial de mediciones de distanciaCen
+float historial1 = -1;
+float historial2 = -1;
+float historial3 = -1;
 
+//variables para saber si el auto esta atascado
 int repeticionesSimilares = 0;
 const int repeticionesLimite = 3;
 const float tolerancia = 3.0;
@@ -110,10 +113,9 @@ float medirDistanciaEn(int angulo) {
   return duracion * 0.0343 / 2;  // Devuelve la distancia en cm
 }
 
-bool sonSimilares(float nueva, float h1, float h2, float h3) {
-  return abs(nueva - h1) < tolerancia &&
-         abs(nueva - h2) < tolerancia &&
-         abs(nueva - h3) < tolerancia;
+//Determina si 2 dictancias son similares tomando en cuenta una tolerancia de error
+bool sonSimilares(float a, float b) {
+  return abs(a - b) < TOLERANCIA;
 }
 
 // ----------------------- FUNCIONAMIENTO -------------------
@@ -205,7 +207,6 @@ void loop() {
     accionTomada = true;
   }
 
-
   //Se habia implementado un ELSE para las condiciones no
   //tomadas, que simplemente retrocedia. pero aun asi encontre una situacion
   //en donde el auto quedo completamente estatico
@@ -227,26 +228,19 @@ void loop() {
   }
 
 
-  if (sonSimilares(distanciaIzq, histIzq[0], histIzq[1], histIzq[2]) &&
-    sonSimilares(distanciaCen, histCen[0], histCen[1], histCen[2]) &&
-    sonSimilares(distanciaDer, histDer[0], histDer[1], histDer[2])) {
-
+// Verificar si está atascado por repetir distancias similares
+if (sonSimilares(distanciaCen, historial1) &&
+    sonSimilares(distanciaCen, historial2) &&
+    sonSimilares(distanciaCen, historial3)) {
   repeticionesSimilares++;
-  Serial.println(" Distancias similares detectadas.");
 } else {
-  repeticionesSimilares = 0; // Reiniciar si hubo cambio
+  repeticionesSimilares = 0;  // Reinicia si no son iguales
 }
 
 // Mover historial (cola FIFO)
-  for (int i = 2; i > 0; i--) {
-    histIzq[i] = histIzq[i - 1];
-    histCen[i] = histCen[i - 1];
-    histDer[i] = histDer[i - 1];
-  }
-
-  histIzq[0] = distanciaIzq;
-  histCen[0] = distanciaCen;
-  histDer[0] = distanciaDer;
+  historial3 = historial2;
+  historial2 = historial1;
+  historial1 = distanciaCen;
 
   // Si el patrón se repite muchas veces, asumir atasco
   if (repeticionesSimilares >= repeticionesLimite) {
