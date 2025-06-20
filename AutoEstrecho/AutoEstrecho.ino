@@ -79,7 +79,7 @@ void retroceder(){
 
 float medirDistanciaEn(int angulo) {
   servoMotor.write(angulo);
-  delay(500);  // Deja que el servo se estabilice
+  delay(250);  // Deja que el servo se estabilice
 
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);

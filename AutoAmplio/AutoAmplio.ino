@@ -26,16 +26,14 @@ float distanciaIzq = 0;
 float distanciaCen = 0;
 float distanciaDer = 0;
 
+float histIzq[3] = {-1, -1, -1};
+float histCen[3] = {-1, -1, -1};
+float histDer[3] = {-1, -1, -1};
 
-// Variables pensadas para un uso futuro.
-// Almacenan una estimación de la distancia en cada dirección (izquierda, centro y derecha)
-// mientras el auto esté orientado hacia otro lado o tomando otra lectura.
-// Esto permitirá mantener un "mapa aproximado" del entorno para tomar decisiones
-// incluso cuando no se estén midiendo directamente esas direcciones.
+int repeticionesSimilares = 0;
+const int repeticionesLimite = 3;
+const float tolerancia = 3.0;
 
-// float distanciaIzqAprox;
-// float distanciaCenAprox;
-// float distanciaDerAprox;
 
 //   --------------FUNCIONES DE MOVIMIENTO--------------------
 void avanzar(){
@@ -110,6 +108,12 @@ float medirDistanciaEn(int angulo) {
 
   long duracion = pulseIn(echoPin, HIGH);
   return duracion * 0.0343 / 2;  // Devuelve la distancia en cm
+}
+
+bool sonSimilares(float nueva, float h1, float h2, float h3) {
+  return abs(nueva - h1) < tolerancia &&
+         abs(nueva - h2) < tolerancia &&
+         abs(nueva - h3) < tolerancia;
 }
 
 // ----------------------- FUNCIONAMIENTO -------------------
@@ -222,6 +226,35 @@ void loop() {
     delay(500);
   }
 
+
+  if (sonSimilares(distanciaIzq, histIzq[0], histIzq[1], histIzq[2]) &&
+    sonSimilares(distanciaCen, histCen[0], histCen[1], histCen[2]) &&
+    sonSimilares(distanciaDer, histDer[0], histDer[1], histDer[2])) {
+
+  repeticionesSimilares++;
+  Serial.println(" Distancias similares detectadas.");
+} else {
+  repeticionesSimilares = 0; // Reiniciar si hubo cambio
+}
+
+// Mover historial (cola FIFO)
+  for (int i = 2; i > 0; i--) {
+    histIzq[i] = histIzq[i - 1];
+    histCen[i] = histCen[i - 1];
+    histDer[i] = histDer[i - 1];
+  }
+
+  histIzq[0] = distanciaIzq;
+  histCen[0] = distanciaCen;
+  histDer[0] = distanciaDer;
+
+  // Si el patrón se repite muchas veces, asumir atasco
+  if (repeticionesSimilares >= repeticionesLimite) {
+    Serial.println("Atasco detectado por repetición. Retrocediendo");
+    retroceder();
+    delay(500);
+    repeticionesSimilares = 0;
+  }
 }
 
 
