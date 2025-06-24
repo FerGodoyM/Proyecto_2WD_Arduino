@@ -132,6 +132,7 @@ void setup() {
 
   Serial.begin(9600);
   servoMotor.attach(10);
+  delay(1000);
 }
 
 void loop() {
