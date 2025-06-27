@@ -28,17 +28,17 @@ float distanciaIzq = 0;
 float distanciaCen = 0;
 float distanciaDer = 0;
 
-float distancia_min = 10.0;
-float distancia_max = 20.0; 
+float distancia_min = 20.0;
+float distancia_max = 28.0; 
 
 float h1 = -1, h2 = -1, h3 = -1;
 int repeticionesSimilares = 0;
 const int repeticionesLimite = 3;
 const float tolerancia = 2.0;
 
-float Kp = 1;
+float Kp = 6;
 float Ki = 0.2;
-float Kd = 0.5;
+float Kd = 3;
 
 float error = 0;
 float integral = 0;
@@ -49,8 +49,8 @@ float correccionPID = 0;
 int velocidadIzq;
 int velocidadDer;
 float velocidadControlada;
-int velocidadBase = 250;
-int velocidadGiro = 230;
+int velocidadBase = 230;
+int velocidadGiro = 200;
 
 //   --------------FUNCIONES DE MOVIMIENTO--------------------
 
@@ -115,7 +115,7 @@ void retroceder(){
 
 float medirDistanciaEn(int angulo) {
   servoMotor.write(angulo);
-  delay(250);  // Deja que el servo se estabilice
+  delay(220);
 
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
@@ -124,7 +124,7 @@ float medirDistanciaEn(int angulo) {
   digitalWrite(trigPin, LOW);
 
   long duracion = pulseIn(echoPin, HIGH);
-  return duracion * 0.0343 / 2;  // Devuelve la distancia en cm
+  return duracion * 0.0343 / 2;
 }
 
 void girarHastaDespejar(bool derecha, int maxIntentos = 15) {
@@ -141,7 +141,6 @@ void girarHastaDespejar(bool derecha, int maxIntentos = 15) {
     intentos++;
   }
 
-  // Extra para asegurar alineación
   if (derecha) {
     girarDerecha();
   } else {
@@ -150,9 +149,9 @@ void girarHastaDespejar(bool derecha, int maxIntentos = 15) {
   analogWrite(ENA, velocidadGiro);
   analogWrite(ENB, velocidadGiro);
   delay(115);
-  detener();
-  analogWrite(ENA, 0);
-  analogWrite(ENB, 0);
+  avanzar();
+  analogWrite(ENA, velocidadBase);
+  analogWrite(ENB, velocidadBase);
 }
 
 bool sonSimilares(float a, float b) {
@@ -183,86 +182,39 @@ void setup() {
   delay(1000);
 }
 
-int contadorRetroceder= 0;
-
 void loop() {
   distanciaCen = medirDistanciaEn(ANGULO_CEN);
 
-  if (distanciaCen < 6.0) {
-    retroceder();
-    delay(500);
-    detener();
-    return;
-  }
-
-  if(distanciaCen >= distancia_min + 6.0){
+  if(distanciaCen >= distancia_min){
     error = distancia_max - distanciaCen;
     integral += error;
     derivada = error - errorAnterior;
-    contadorRetroceder = 0;
 
     correccionPID = (Kp * error) + (Ki * integral) + (Kd * derivada);
     velocidadControlada = velocidadBase - correccionPID;
-    velocidadControlada = constrain(velocidadControlada, 0, velocidadBase);
+    velocidadControlada = constrain(velocidadControlada, velocidadGiro, velocidadBase);
     errorAnterior = error;
 
     avanzar();
     analogWrite(ENA, velocidadControlada);
     analogWrite(ENB, velocidadControlada);
-    contadorRetroceder = 0;
   }else{
-    detener();
     reiniciarPID();
-
     distanciaDer = medirDistanciaEn(ANGULO_DER);
     distanciaIzq = medirDistanciaEn(ANGULO_IZQ);
 
     if(distanciaDer >= distancia_min && distanciaDer > distanciaIzq){
       girarHastaDespejar(true);
-      contadorRetroceder = 0;
     }else if (distanciaIzq >= distancia_min && distanciaIzq > distanciaDer) {
       girarHastaDespejar(false);
-      contadorRetroceder = 0;
     }else{
-      retroceder();
-      delay(500);
-      contadorRetroceder += 1;
+      if (distanciaDer > distanciaIzq) {
+        girarHastaDespejar(true);
+      }else {
+        girarHastaDespejar(false);
+      }
     }
-    detener();
   }
-
-  if(contadorRetroceder == 3){
-    retroceder();
-    delay(500);
-    detener();
-
-    distanciaCen = medirDistanciaEn(ANGULO_CEN);
-    distanciaDer = medirDistanciaEn(ANGULO_DER);
-    distanciaIzq = medirDistanciaEn(ANGULO_IZQ);
-
-    if(distanciaCen > distanciaIzq && distanciaCen > distanciaDer){
-      error = distancia_max - distanciaCen;
-      integral += error;
-      derivada = error - errorAnterior;
-      contadorRetroceder = 0;
-
-      correccionPID = (Kp * error) + (Ki * integral) + (Kd * derivada);
-      velocidadControlada = velocidadBase - correccionPID;
-      velocidadControlada = constrain(velocidadControlada, 0, velocidadBase);
-      errorAnterior = error;
-
-      avanzar();
-      analogWrite(ENA, velocidadControlada);
-      analogWrite(ENB, velocidadControlada);
-    }
-    else if(distanciaIzq > distanciaCen && distanciaIzq > distanciaDer){
-      girarHastaDespejar(false);
-    }else if(distanciaDer > distanciaIzq && distanciaDer > distanciaCen){
-      girarHastaDespejar(true);
-    }
-    contadorRetroceder = 0;
-  }
-
 
   if (sonSimilares(distanciaCen, h1) &&
       sonSimilares(distanciaCen, h2) &&
