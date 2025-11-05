@@ -13,7 +13,7 @@ Características principales
 
 Contenido del repositorio
 -------------------------
-- `AutoAmplio.ino` — Sketch principal de Arduino que implementa la lógica de navegación.
+- `2WD.ino` — Sketch principal de Arduino que implementa la lógica de navegación.
 
 Hardware necesario
 ------------------
@@ -25,7 +25,7 @@ Hardware necesario
 - Batería o fuente de alimentación para motores (capaz de entregar la corriente requerida).
 - Cables, protoboard o placa de montaje.
 
-Mapeo de pines (según `AutoAmplio.ino`)
+Mapeo de pines (según `2WD.ino`)
 ---------------------------------------
 Las constantes están definidas en el sketch; conéctalas tal cual o ajusta el sketch si tu hardware difiere.
 
@@ -66,7 +66,7 @@ Notas de alimentación y seguridad
 
 Comportamiento y parámetros importantes
 ---------------------------------------
-En el sketch `AutoAmplio.ino` se usan varios umbrales que puedes ajustar:
+En el sketch `2WD.ino` se usan varios umbrales que puedes ajustar:
 - Umbral frontal (`distanciaCen`) para considerar el camino libre: 25 cm
 - Umbrales laterales para correcciones: 15 cm
 - Umbral de emergencia/retroceso: 10 cm
@@ -84,7 +84,7 @@ Subir el sketch
 ---------------
 1. Abre el IDE de Arduino (o Arduino CLI / PlatformIO).
 2. Selecciona tu placa (por ejemplo, Arduino Uno) y el puerto COM correspondiente.
-3. Abre `AutoAmplio.ino` y carga el sketch.
+3. Abre `2WD.ino` y carga el sketch.
 
 Calibración y pruebas
 ---------------------
